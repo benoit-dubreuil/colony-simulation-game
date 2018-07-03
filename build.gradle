@@ -1,0 +1,3 @@
+mainClassName = 'com.cheesygames.colonysimulation.ColonySimulationGame'
+runApp.main = mainClassName
+debugApp.main = mainClassName
