@@ -1,7 +1,6 @@
 package com.cheesygames.colonysimulation;
 
 import com.cheesygames.colonysimulation.asset.DefaultMaterial;
-import com.cheesygames.colonysimulation.assets.Asset;
 import com.cheesygames.colonysimulation.math.vector.Vector3i;
 import com.cheesygames.colonysimulation.world.World;
 import com.cheesygames.colonysimulation.world.chunk.Chunk;
@@ -73,13 +72,13 @@ public class ColonySimulationGame extends Game {
         chunkGeom.setLocalTranslation(chunk.getSize().x / -2f, chunk.getSize().y / -2f, chunk.getSize().z / -2f);
 
         m_material = new Material(assetManager, DefaultMaterial.LIGHTING.getPath());
-        m_material.setBoolean("UseMaterialColors",true);
-        m_material.setColor("Ambient",ColorRGBA.White);
-        m_material.setColor("Diffuse",ColorRGBA.White);
-        m_material.setColor("Specular",ColorRGBA.White);
+        m_material.setBoolean("UseMaterialColors", true);
+        m_material.setColor("Ambient", ColorRGBA.White);
+        m_material.setColor("Diffuse", ColorRGBA.LightGray);
+        m_material.setColor("Specular", new ColorRGBA(0.1f, 0.1f, 0.1f, 1f));
         m_material.setFloat("Shininess", 64f);  // [0,128]
         m_material.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
-        m_material.getAdditionalRenderState().setWireframe(true);
+        //  m_material.getAdditionalRenderState().setWireframe(true);
 
         chunkGeom.setMaterial(m_material);
         rootNode.attachChild(chunkGeom);
