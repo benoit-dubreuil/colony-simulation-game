@@ -16,7 +16,6 @@ import com.jme3.scene.debug.Arrow;
 
 public class ColonySimulationGame extends Game {
 
-    private World m_world;
     private Material m_material;
 
     public static void main(String[] args) {
@@ -27,9 +26,9 @@ public class ColonySimulationGame extends Game {
     public void simpleInitApp() {
         super.simpleInitApp();
 
-        m_world = new World();
-        m_world.generateWorld();
-        m_world.generateMeshes();
+        GameGlobal.world = new World();
+        GameGlobal.world.generateWorld();
+        GameGlobal.world.generateMeshes();
 
         initLights();
         addChunk();
@@ -67,7 +66,7 @@ public class ColonySimulationGame extends Game {
     }
 
     protected void addChunk() {
-        Chunk chunk = m_world.getChunkAt(Vector3i.ZERO);
+        Chunk chunk = GameGlobal.world.getChunkAt(Vector3i.ZERO);
         Geometry chunkGeom = new Geometry("", chunk.getMesh());
         chunkGeom.setLocalTranslation(chunk.getSize().x / -2f, chunk.getSize().y / -2f, chunk.getSize().z / -2f);
 
@@ -77,7 +76,6 @@ public class ColonySimulationGame extends Game {
         m_material.setColor("Diffuse", ColorRGBA.LightGray);
         m_material.setColor("Specular", new ColorRGBA(0.1f, 0.1f, 0.1f, 1f));
         m_material.setFloat("Shininess", 64f);  // [0,128]
-        m_material.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
         //  m_material.getAdditionalRenderState().setWireframe(true);
 
         chunkGeom.setMaterial(m_material);
