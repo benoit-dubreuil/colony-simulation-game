@@ -72,8 +72,7 @@ public class ColonySimulationGame extends Game {
 
     protected void addChunk(Chunk chunk) {
         Geometry chunkGeom = new Geometry("", chunk.getMesh());
-        Vector3f chunkCenter = chunk.computeCenter();
-        chunkGeom.setLocalTranslation(chunkCenter.negateLocal());
+        chunkGeom.setLocalTranslation(chunk.computePositionIndex().toVector3f());
 
         m_material = new Material(assetManager, DefaultMaterial.LIGHTING.getPath());
         m_material.setBoolean("UseMaterialColors", true);
