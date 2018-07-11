@@ -1,12 +1,12 @@
 package com.cheesygames.colonysimulation;
 
 import com.cheesygames.colonysimulation.asset.DefaultMaterial;
-import com.cheesygames.colonysimulation.math.vector.Vector3i;
 import com.cheesygames.colonysimulation.world.World;
 import com.cheesygames.colonysimulation.world.chunk.Chunk;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
+import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
@@ -30,7 +30,7 @@ public class ColonySimulationGame extends Game {
         GameGlobal.world.generateMeshes();
 
         initLights();
-        addChunk();
+        addChunks();
 
         flyCam.setMoveSpeed(flyCam.getMoveSpeed() * 25f);
         attachCoordinateAxes(Vector3f.ZERO.clone());
@@ -64,10 +64,15 @@ public class ColonySimulationGame extends Game {
         return g;
     }
 
-    protected void addChunk() {
-        Chunk chunk = GameGlobal.world.getChunkAt(Vector3i.ZERO);
+    protected void addChunks() {
+        for (Chunk chunk : GameGlobal.world.getChunks().values()) {
+            addChunk(chunk);
+        }
+    }
+
+    protected void addChunk(Chunk chunk) {
         Geometry chunkGeom = new Geometry("", chunk.getMesh());
-        chunkGeom.setLocalTranslation(chunk.getSize().x / -2f, chunk.getSize().y / -2f, chunk.getSize().z / -2f);
+        chunkGeom.setLocalTranslation(chunk.computePositionIndex().toVector3f());
 
         m_material = new Material(assetManager, DefaultMaterial.LIGHTING.getPath());
         m_material.setBoolean("UseMaterialColors", true);
@@ -75,7 +80,6 @@ public class ColonySimulationGame extends Game {
         m_material.setColor("Diffuse", ColorRGBA.LightGray);
         m_material.setColor("Specular", new ColorRGBA(0.1f, 0.1f, 0.1f, 1f));
         m_material.setFloat("Shininess", 64f);  // [0,128]
-        //  m_material.getAdditionalRenderState().setWireframe(true);
 
         chunkGeom.setMaterial(m_material);
         rootNode.attachChild(chunkGeom);
