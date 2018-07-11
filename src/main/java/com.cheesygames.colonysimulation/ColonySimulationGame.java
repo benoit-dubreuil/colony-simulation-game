@@ -11,11 +11,14 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
+import com.jme3.scene.Node;
 import com.jme3.scene.debug.Arrow;
+import com.jme3.scene.shape.Box;
 
 public class ColonySimulationGame extends Game {
 
-    private Material m_material;
+    private Material m_chunkMaterial;
+    private Material m_chunkBoundsMaterial;
 
     public static void main(String[] args) {
         new ColonySimulationGame().start();
@@ -38,7 +41,6 @@ public class ColonySimulationGame extends Game {
 
     @Override
     protected void updateGame() {
-
     }
 
     private void attachCoordinateAxes(Vector3f pos) {
@@ -65,24 +67,40 @@ public class ColonySimulationGame extends Game {
     }
 
     protected void addChunks() {
+        m_chunkMaterial = new Material(assetManager, DefaultMaterial.LIGHTING.getPath());
+        m_chunkMaterial.setBoolean("UseMaterialColors", true);
+        m_chunkMaterial.setColor("Ambient", ColorRGBA.White);
+        m_chunkMaterial.setColor("Diffuse", ColorRGBA.LightGray);
+        m_chunkMaterial.setColor("Specular", new ColorRGBA(0.1f, 0.1f, 0.1f, 1f));
+        m_chunkMaterial.setFloat("Shininess", 64f);  // [0,128]
+
+        m_chunkBoundsMaterial = new Material(assetManager, DefaultMaterial.UNSHADED.getPath());
+        m_chunkBoundsMaterial.setColor("Color", ColorRGBA.Blue);
+        m_chunkBoundsMaterial.getAdditionalRenderState().setWireframe(true);
+        m_chunkBoundsMaterial.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
+
         for (Chunk chunk : GameGlobal.world.getChunks().values()) {
-            addChunk(chunk);
+            if (!chunk.isEmpty()) {
+                addChunk(chunk);
+            }
         }
     }
 
     protected void addChunk(Chunk chunk) {
+        Node chunkNode = new Node("");
         Geometry chunkGeom = new Geometry("", chunk.getMesh());
-        chunkGeom.setLocalTranslation(chunk.computePositionIndex().toVector3f());
+        Box boundsMesh = new Box(GameGlobal.world.getChunkSize().x / 2f, GameGlobal.world.getChunkSize().y / 2f, GameGlobal.world.getChunkSize().z / 2f);
+        Geometry chunkBounds = new Geometry("", boundsMesh);
 
-        m_material = new Material(assetManager, DefaultMaterial.LIGHTING.getPath());
-        m_material.setBoolean("UseMaterialColors", true);
-        m_material.setColor("Ambient", ColorRGBA.White);
-        m_material.setColor("Diffuse", ColorRGBA.LightGray);
-        m_material.setColor("Specular", new ColorRGBA(0.1f, 0.1f, 0.1f, 1f));
-        m_material.setFloat("Shininess", 64f);  // [0,128]
+        chunkBounds.setLocalTranslation(boundsMesh.xExtent - 0.5f, boundsMesh.yExtent - 0.5f, boundsMesh.zExtent - 0.5f);
+        chunkNode.setLocalTranslation(chunk.computePositionIndex().toVector3f());
 
-        chunkGeom.setMaterial(m_material);
-        rootNode.attachChild(chunkGeom);
+        chunkGeom.setMaterial(m_chunkMaterial);
+        chunkBounds.setMaterial(m_chunkBoundsMaterial);
+
+        chunkNode.attachChild(chunkGeom);
+        chunkNode.attachChild(chunkBounds);
+        rootNode.attachChild(chunkNode);
     }
 
     protected void initLights() {
