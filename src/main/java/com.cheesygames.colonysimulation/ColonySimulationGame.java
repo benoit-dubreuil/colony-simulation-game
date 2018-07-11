@@ -80,8 +80,6 @@ public class ColonySimulationGame extends Game {
         m_material.setColor("Diffuse", ColorRGBA.LightGray);
         m_material.setColor("Specular", new ColorRGBA(0.1f, 0.1f, 0.1f, 1f));
         m_material.setFloat("Shininess", 64f);  // [0,128]
-        m_material.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
-        m_material.getAdditionalRenderState().setWireframe(true);
 
         chunkGeom.setMaterial(m_material);
         rootNode.attachChild(chunkGeom);
