@@ -80,9 +80,7 @@ public class ColonySimulationGame extends Game {
         m_chunkBoundsMaterial.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
 
         for (Chunk chunk : GameGlobal.world.getChunks().values()) {
-            if (!chunk.isEmpty()) {
-                addChunk(chunk);
-            }
+            addChunk(chunk);
         }
     }
 
