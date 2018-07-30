@@ -51,15 +51,22 @@ public class ColonySimulationGame extends Game {
     protected void updateGame() {
     }
 
-    private void attachCoordinateAxes(Vector3f pos) {
+    private Node attachCoordinateAxes(Vector3f pos) {
+        Node arrowNode = new Node();
+        arrowNode.setLocalTranslation(pos);
+
         Arrow arrow = new Arrow(Vector3f.UNIT_X);
-        putShape(arrow, ColorRGBA.Red).setLocalTranslation(pos);
+        arrowNode.attachChild(putShape(arrow, ColorRGBA.Red));
 
         arrow = new Arrow(Vector3f.UNIT_Y);
-        putShape(arrow, ColorRGBA.Green).setLocalTranslation(pos);
+        arrowNode.attachChild(putShape(arrow, ColorRGBA.Green));
 
         arrow = new Arrow(Vector3f.UNIT_Z);
-        putShape(arrow, ColorRGBA.Blue).setLocalTranslation(pos);
+        arrowNode.attachChild(putShape(arrow, ColorRGBA.Blue));
+
+        rootNode.attachChild(arrowNode);
+
+        return arrowNode;
     }
 
     private Geometry putShape(Mesh shape, ColorRGBA color) {
@@ -70,7 +77,7 @@ public class ColonySimulationGame extends Game {
         mat.setColor("Color", color);
         g.setMaterial(mat);
         g.setLocalScale(10f);
-        rootNode.attachChild(g);
+
         return g;
     }
 
@@ -106,6 +113,7 @@ public class ColonySimulationGame extends Game {
 
         chunkNode.attachChild(chunkGeom);
         chunkNode.attachChild(chunkBounds);
+
         rootNode.attachChild(chunkNode);
     }
 
