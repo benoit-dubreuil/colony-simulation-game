@@ -4,6 +4,7 @@ import com.cheesygames.colonysimulation.appstate.VoxelFaceRayCastPreviewer;
 import com.cheesygames.colonysimulation.asset.DefaultMaterial;
 import com.cheesygames.colonysimulation.world.World;
 import com.cheesygames.colonysimulation.world.chunk.Chunk;
+import com.jme3.font.BitmapText;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
@@ -34,9 +35,11 @@ public class ColonySimulationGame extends Game {
         GameGlobal.world.generateMeshes();
 
         initLights();
+        initCrossHairs();
         addChunks();
 
-        flyCam.setMoveSpeed(flyCam.getMoveSpeed() * 25f);
+        flyCam.setMoveSpeed(flyCam.getMoveSpeed() * 18f);
+        cam.setLocation(Vector3f.UNIT_Y.mult(25));
         attachCoordinateAxes(Vector3f.ZERO.clone());
 
         VoxelFaceRayCastPreviewer voxelFaceRayCastPreviewer = new VoxelFaceRayCastPreviewer();
@@ -122,5 +125,18 @@ public class ColonySimulationGame extends Game {
         AmbientLight ambientLight = new com.jme3.light.AmbientLight();
         ambientLight.setColor(ColorRGBA.White.mult(0.1f));
         rootNode.addLight(ambientLight);
+    }
+
+    /** A centred plus sign to help the player aim. */
+    protected void initCrossHairs() {
+        setDisplayStatView(false);
+        guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+        BitmapText ch = new BitmapText(guiFont, false);
+        ch.setSize(guiFont.getCharSet().getRenderedSize() * 2);
+        ch.setText("+"); // crosshairs
+        ch.setLocalTranslation( // center
+            settings.getWidth() / 2 - ch.getLineWidth()/2,
+            settings.getHeight() / 2 + ch.getLineHeight()/2, 0);
+        guiNode.attachChild(ch);
     }
 }
