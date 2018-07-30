@@ -1,8 +1,16 @@
 package com.cheesygames.colonysimulation;
 
 import com.cheesygames.colonysimulation.asset.DefaultMaterial;
+import com.cheesygames.colonysimulation.math.bounding.VoxelRay;
+import com.cheesygames.colonysimulation.math.bounding.VoxelWorldUtils;
+import com.cheesygames.colonysimulation.math.vector.Vector3i;
 import com.cheesygames.colonysimulation.world.World;
 import com.cheesygames.colonysimulation.world.chunk.Chunk;
+import com.cheesygames.colonysimulation.world.chunk.voxel.VoxelType;
+import com.cheesygames.colonysimulation.world.raycast.VoxelFaceRayCastContinuousTraverser;
+import com.jme3.input.MouseInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
@@ -56,7 +64,7 @@ public class ColonySimulationGame extends Game {
 
     private Geometry putShape(Mesh shape, ColorRGBA color) {
         Geometry g = new Geometry("coordinate axis", shape);
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        Material mat = new Material(assetManager, DefaultMaterial.UNSHADED.getPath());
         mat.getAdditionalRenderState().setWireframe(true);
         mat.getAdditionalRenderState().setLineWidth(4);
         mat.setColor("Color", color);
@@ -110,5 +118,55 @@ public class ColonySimulationGame extends Game {
         AmbientLight ambientLight = new com.jme3.light.AmbientLight();
         ambientLight.setColor(ColorRGBA.White.mult(0.1f));
         rootNode.addLight(ambientLight);
+    }
+
+    private Box rayBox;
+    private Geometry rayCastVisual;
+    private Material rayMat;
+
+    private final ActionListener actionListener = new ActionListener() {
+
+        @Override
+        public void onAction(String name, boolean keyPressed, float tpf) {
+            if (name.equals("VoxelRay") && !keyPressed) {
+                VoxelRay ray = new VoxelRay(cam.getLocation().clone(), cam.getDirection().clone().normalizeLocal(), 40);
+                VoxelFaceRayCastContinuousTraverser rayCastAction = new VoxelFaceRayCastContinuousTraverser(VoxelWorldUtils.getVoxelIndex(cam.getLocation()), GameGlobal.world);
+
+                System.out.println();
+                System.out.println(cam.getLocation());
+                System.out.println(VoxelWorldUtils.getVoxelIndex(cam.getLocation()));
+
+                rayCastAction.setReturnCondition((index, voxelType, direction) -> {
+                    System.out.println(index + ", " + direction);
+                    return voxelType == VoxelType.SOLID;
+                });
+
+                if (rayCastVisual == null) {
+                    rayBox = new Box(World.VOXEL_HALF_EXTENT, World.VOXEL_HALF_EXTENT, World.VOXEL_HALF_EXTENT);
+                    rayCastVisual = new Geometry("", rayBox);
+                    rayMat = new Material(assetManager, DefaultMaterial.UNSHADED.getPath());
+
+                    rayMat.setColor("Color", ColorRGBA.Red);   // set color of material to blue
+                    rayCastVisual.setMaterial(rayMat);                   // set the cube's material
+                    rootNode.attachChild(rayCastVisual);
+                }
+
+                Vector3i index = new Vector3i();
+
+                System.out.println("Ray Cast");
+                ray.rayCastLocal(World.VOXEL_HALF_EXTENT, rayCastAction, index);
+
+                Vector3i visualLocalPosition = ray.wasStopped() ? index.add(rayCastAction.getIncomingDirection().getOpposite().getDirection()) : index;
+                rayCastVisual.setLocalTranslation(visualLocalPosition.toVector3f());
+            }
+        }
+    };
+
+    @Override
+    protected void initKeys() {
+        super.initKeys();
+
+        inputManager.addMapping("VoxelRay", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addListener(actionListener, "VoxelRay");
     }
 }
