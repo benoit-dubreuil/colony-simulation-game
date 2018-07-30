@@ -60,6 +60,7 @@ public class VoxelFaceRayCastPreviewer extends AbstractAppState {
     private Geometry createFacePreview() {
         Material facePreviewMat = new Material(GameGlobal.assetManager, DefaultMaterial.UNSHADED.getPath());
         facePreviewMat.setColor("Color", ColorRGBA.Red);
+        facePreviewMat.getAdditionalRenderState().setDepthTest(false);
 
         Geometry facePreview = new Geometry("Voxel Face Preview", createFaceMesh());
         facePreview.setMaterial(facePreviewMat);
