@@ -102,12 +102,16 @@ public class VoxelFaceRayCastPreviewer extends AbstractAppState {
 
         m_voxelRay.rayCastLocal(m_rayCastAction, m_finalVoxel);
 
-        if (m_voxelRay.wasStopped() && VoxelWorldUtils.getVoxelIndexLocal(cam.getLocation(), m_initialVoxel) != m_finalVoxel) {
-            m_facePreview.setLocalRotation(m_rayCastAction.getIncomingDirection().getRotation());
+        if (m_voxelRay.wasStopped() && !VoxelWorldUtils.getVoxelIndexLocal(cam.getLocation(), m_initialVoxel).equals(m_finalVoxel)) {
+            m_facePreview.setLocalRotation(m_rayCastAction.getIncomingDirection().getOpposite().getRotation());
+            m_facePreview.setLocalTranslation(m_finalVoxel.x, m_finalVoxel.y, m_finalVoxel.z);
 
             if (m_facePreview.getParent() == null) {
                 GameGlobal.rootNode.attachChild(m_facePreview);
             }
+        }
+        else {
+            m_facePreview.removeFromParent();
         }
     }
 }
