@@ -1,14 +1,16 @@
-package com.cheesygames.colonysimulation.game.input;
+package com.cheesygames.colonysimulation.game.input.cameravoxelaction;
 
 import com.cheesygames.colonysimulation.GameGlobal;
 import com.cheesygames.colonysimulation.asset.DefaultMaterial;
+import com.cheesygames.colonysimulation.input.ActionInputAppState;
 import com.cheesygames.colonysimulation.math.MeshBufferUtils;
 import com.cheesygames.colonysimulation.math.bounding.VoxelRay;
 import com.cheesygames.colonysimulation.math.bounding.VoxelWorldUtils;
+import com.cheesygames.colonysimulation.math.direction.Direction3D;
 import com.cheesygames.colonysimulation.math.vector.Vector3i;
+import com.cheesygames.colonysimulation.world.chunk.Chunk;
 import com.cheesygames.colonysimulation.world.chunk.voxel.VoxelType;
 import com.cheesygames.colonysimulation.world.raycast.VoxelFaceRayCastContinuousTraverser;
-import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -22,7 +24,10 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VoxelFaceRayCastPreviewer extends AbstractAppState {
+/**
+ * Application state that shows the currently selected voxel and allows its edition.
+ */
+public class CameraVoxelActionInputAppState extends ActionInputAppState<CameraVoxelActionInput, CameraVoxelActionListener, CameraVoxelActionListener> {
 
     private static final List<Vector3f> FACE_MESH_VERTICES = new ArrayList<>(MeshBufferUtils.SHARED_VERTICES_PER_QUAD);
 
@@ -45,7 +50,13 @@ public class VoxelFaceRayCastPreviewer extends AbstractAppState {
     private VoxelFaceRayCastContinuousTraverser m_rayCastAction;
     private Geometry m_facePreview;
 
-    public VoxelFaceRayCastPreviewer() {
+    public CameraVoxelActionInputAppState() {
+        this(new CameraVoxelActionListener());
+    }
+
+    public CameraVoxelActionInputAppState(CameraVoxelActionListener cameraVoxelActionListener) {
+        super(CameraVoxelActionInput.class, cameraVoxelActionListener, cameraVoxelActionListener);
+
         m_voxelRay = new VoxelRay();
         m_initialVoxel = new Vector3i();
         m_finalVoxel = new Vector3i();
@@ -54,7 +65,15 @@ public class VoxelFaceRayCastPreviewer extends AbstractAppState {
 
         m_voxelRay.setLength(RAY_DISTANCE);
 
-        m_rayCastAction.setReturnCondition((index, voxelType) -> voxelType == VoxelType.SOLID);
+        m_rayCastAction.setReturnCondition((index, voxelType) -> {
+            boolean stopRayCast = voxelType == VoxelType.SOLID;
+
+            if (stopRayCast && m_rayCastAction.getIncomingDirection() != Direction3D.ZERO && m_actionListener.shouldAddVoxel()) {
+                ((Chunk) m_rayCastAction.getLastTraversedChunk()).setVoxelAt(VoxelType.SOLID, m_rayCastAction.getLastTraversedRelativeVoxelIndex());
+            }
+
+            return stopRayCast;
+        });
     }
 
     private Geometry createFacePreview() {
@@ -102,6 +121,7 @@ public class VoxelFaceRayCastPreviewer extends AbstractAppState {
         VoxelWorldUtils.getVoxelIndexLocal(cam.getLocation(), m_initialVoxel);
 
         m_voxelRay.rayCastLocal(m_rayCastAction, m_finalVoxel);
+        m_actionListener.setShouldAddVoxel(false);
 
         if (m_voxelRay.wasStopped() && !VoxelWorldUtils.getVoxelIndexLocal(cam.getLocation(), m_initialVoxel).equals(m_finalVoxel)) {
             m_facePreview.setLocalRotation(m_rayCastAction.getIncomingDirection().getOpposite().getRotation());

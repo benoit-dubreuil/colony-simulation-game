@@ -3,7 +3,7 @@ package com.cheesygames.colonysimulation.game;
 import com.cheesygames.colonysimulation.Game;
 import com.cheesygames.colonysimulation.GameGlobal;
 import com.cheesygames.colonysimulation.asset.DefaultMaterial;
-import com.cheesygames.colonysimulation.game.input.VoxelFaceRayCastPreviewer;
+import com.cheesygames.colonysimulation.game.input.cameravoxelaction.CameraVoxelActionInputAppState;
 import com.cheesygames.colonysimulation.world.World;
 import com.cheesygames.colonysimulation.world.chunk.Chunk;
 import com.jme3.font.BitmapText;
@@ -44,8 +44,7 @@ public class ColonySimulationGame extends Game {
         cam.setLocation(Vector3f.UNIT_Y.mult(25));
         attachCoordinateAxes(Vector3f.ZERO.clone());
 
-        VoxelFaceRayCastPreviewer voxelFaceRayCastPreviewer = new VoxelFaceRayCastPreviewer();
-        stateManager.attach(voxelFaceRayCastPreviewer);
+        stateManager.attach(new CameraVoxelActionInputAppState());
     }
 
     @Override
