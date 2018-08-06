@@ -1,4 +1,4 @@
-package com.cheesygames.colonysimulation.appstate;
+package com.cheesygames.colonysimulation.game.input;
 
 import com.cheesygames.colonysimulation.GameGlobal;
 import com.cheesygames.colonysimulation.asset.DefaultMaterial;

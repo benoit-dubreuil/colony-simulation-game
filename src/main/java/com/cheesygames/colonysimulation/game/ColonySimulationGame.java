@@ -1,7 +1,9 @@
-package com.cheesygames.colonysimulation;
+package com.cheesygames.colonysimulation.game;
 
-import com.cheesygames.colonysimulation.appstate.VoxelFaceRayCastPreviewer;
+import com.cheesygames.colonysimulation.Game;
+import com.cheesygames.colonysimulation.GameGlobal;
 import com.cheesygames.colonysimulation.asset.DefaultMaterial;
+import com.cheesygames.colonysimulation.game.input.VoxelFaceRayCastPreviewer;
 import com.cheesygames.colonysimulation.world.World;
 import com.cheesygames.colonysimulation.world.chunk.Chunk;
 import com.jme3.font.BitmapText;
@@ -127,7 +129,9 @@ public class ColonySimulationGame extends Game {
         rootNode.addLight(ambientLight);
     }
 
-    /** A centred plus sign to help the player aim. */
+    /**
+     * A centred plus sign to help the player aim.
+     */
     protected void initCrossHairs() {
         setDisplayStatView(false);
         guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
@@ -135,8 +139,7 @@ public class ColonySimulationGame extends Game {
         ch.setSize(guiFont.getCharSet().getRenderedSize() * 2);
         ch.setText("+"); // crosshairs
         ch.setLocalTranslation( // center
-            settings.getWidth() / 2 - ch.getLineWidth()/2,
-            settings.getHeight() / 2 + ch.getLineHeight()/2, 0);
+            settings.getWidth() / 2 - ch.getLineWidth() / 2, settings.getHeight() / 2 + ch.getLineHeight() / 2, 0);
         guiNode.attachChild(ch);
     }
 }
