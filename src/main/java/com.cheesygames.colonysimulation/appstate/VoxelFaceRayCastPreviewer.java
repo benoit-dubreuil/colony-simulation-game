@@ -54,7 +54,7 @@ public class VoxelFaceRayCastPreviewer extends AbstractAppState {
 
         m_voxelRay.setLength(RAY_DISTANCE);
 
-        m_rayCastAction.setReturnCondition((index, voxelType, direction) -> voxelType == VoxelType.SOLID);
+        m_rayCastAction.setReturnCondition((index, voxelType) -> voxelType == VoxelType.SOLID);
     }
 
     private Geometry createFacePreview() {
