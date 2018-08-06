@@ -4,12 +4,12 @@ import com.cheesygames.colonysimulation.input.listener.action.IPausableActionLis
 import com.cheesygames.colonysimulation.input.listener.analog.IPausableAnalogListener;
 
 /**
- * Listens to the input events from {@link CameraVoxelActionInput}. Should be used inside the {@link CameraVoxelActionInputAppState}
- * app state.
+ * Listens to the input events from {@link CameraVoxelActionInput}. Should be used inside the {@link CameraVoxelActionInputAppState} app state.
  */
 public class CameraVoxelActionListener implements IPausableAnalogListener<CameraVoxelActionInput>, IPausableActionListener<CameraVoxelActionInput> {
 
     private boolean m_shouldAddVoxel;
+    private float m_timeSinceLastVoxelAdded;
 
     @Override
     public void onAction(CameraVoxelActionInput cameraVoxelAction, boolean isPressed, float tpf) {
@@ -20,7 +20,10 @@ public class CameraVoxelActionListener implements IPausableAnalogListener<Camera
     public void onAnalog(CameraVoxelActionInput cameraVoxelAction, float value, float tpf) {
         switch (cameraVoxelAction) {
             case ADD_VOXEL:
-                m_shouldAddVoxel |= true;
+                if ((m_timeSinceLastVoxelAdded += tpf) * cameraVoxelAction.getMaxInputPerSecond() >= 1) {
+                    m_shouldAddVoxel |= true;
+                    m_timeSinceLastVoxelAdded = 0;
+                }
                 break;
         }
     }

@@ -11,7 +11,7 @@ import com.jme3.input.controls.Trigger;
  */
 public enum CameraVoxelActionInput implements IActionInput {
 
-    ADD_VOXEL(true, false, new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
+    ADD_VOXEL(true, false, 8, new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
 
     static {
         try {
@@ -21,28 +21,34 @@ public enum CameraVoxelActionInput implements IActionInput {
         }
     }
 
-    private final Trigger[] triggers;
-    private final boolean isAnalog;
-    private final boolean isAction;
+    private final Trigger[] m_triggers;
+    private final boolean m_isAnalog;
+    private final boolean m_isAction;
+    private final float m_maxInputPerSecond;
 
-    CameraVoxelActionInput(boolean isAnalog, boolean isAction, Trigger... triggers) {
-        this.triggers = triggers;
-        this.isAnalog = isAnalog;
-        this.isAction = isAction;
+    CameraVoxelActionInput(boolean isAnalog, boolean isAction, float maxInputPerSecond, Trigger... triggers) {
+        this.m_triggers = triggers;
+        this.m_isAnalog = isAnalog;
+        this.m_isAction = isAction;
+        this.m_maxInputPerSecond = maxInputPerSecond;
     }
 
     @Override
     public Trigger[] getTriggers() {
-        return triggers;
+        return m_triggers;
     }
 
     @Override
     public boolean isAnalog() {
-        return isAnalog;
+        return m_isAnalog;
     }
 
     @Override
     public boolean isAction() {
-        return isAction;
+        return m_isAction;
+    }
+
+    public float getMaxInputPerSecond() {
+        return m_maxInputPerSecond;
     }
 }

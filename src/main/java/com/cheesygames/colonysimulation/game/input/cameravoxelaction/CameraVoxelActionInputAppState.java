@@ -4,8 +4,7 @@ import com.cheesygames.colonysimulation.GameGlobal;
 import com.cheesygames.colonysimulation.asset.DefaultMaterial;
 import com.cheesygames.colonysimulation.input.ActionInputAppState;
 import com.cheesygames.colonysimulation.math.MeshBufferUtils;
-import com.cheesygames.colonysimulation.math.bounding.VoxelRay;
-import com.cheesygames.colonysimulation.math.bounding.VoxelWorldUtils;
+import com.cheesygames.colonysimulation.math.bounding.ray.VoxelRay;
 import com.cheesygames.colonysimulation.math.direction.Direction3D;
 import com.cheesygames.colonysimulation.math.vector.Vector3i;
 import com.cheesygames.colonysimulation.world.chunk.Chunk;
@@ -42,8 +41,6 @@ public class CameraVoxelActionInputAppState extends ActionInputAppState<CameraVo
 
     private VoxelRay m_voxelRay;
 
-    // Keep in mind that it will be changed by the traverser
-    private Vector3i m_initialVoxel;
     // Keep in mind that it will be changed by the ray
     private Vector3i m_finalVoxel;
 
@@ -58,9 +55,8 @@ public class CameraVoxelActionInputAppState extends ActionInputAppState<CameraVo
         super(CameraVoxelActionInput.class, cameraVoxelActionListener, cameraVoxelActionListener);
 
         m_voxelRay = new VoxelRay();
-        m_initialVoxel = new Vector3i();
         m_finalVoxel = new Vector3i();
-        m_rayCastAction = new VoxelFaceRayCastContinuousTraverser(m_initialVoxel, GameGlobal.world);
+        m_rayCastAction = new VoxelFaceRayCastContinuousTraverser(GameGlobal.world);
         m_facePreview = createFacePreview();
 
         m_voxelRay.setLength(RAY_DISTANCE);
@@ -118,12 +114,11 @@ public class CameraVoxelActionInputAppState extends ActionInputAppState<CameraVo
 
         m_voxelRay.setStart(cam.getLocation());
         m_voxelRay.setDirection(cam.getDirection());
-        VoxelWorldUtils.getVoxelIndexLocal(cam.getLocation(), m_initialVoxel);
 
         m_voxelRay.rayCastLocal(m_rayCastAction, m_finalVoxel);
         m_actionListener.setShouldAddVoxel(false);
 
-        if (m_voxelRay.wasStopped() && !VoxelWorldUtils.getVoxelIndexLocal(cam.getLocation(), m_initialVoxel).equals(m_finalVoxel)) {
+        if (m_voxelRay.wasStopped() && m_voxelRay.getVoxelDistance() > 2) {
             m_facePreview.setLocalRotation(m_rayCastAction.getIncomingDirection().getOpposite().getRotation());
             m_facePreview.setLocalTranslation(m_finalVoxel.x, m_finalVoxel.y, m_finalVoxel.z);
 
