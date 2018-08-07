@@ -43,7 +43,7 @@ public class ColonySimulationGame extends Game implements IWorldEventCommunicato
         initCrossHairs();
         addChunks();
 
-        flyCam.setMoveSpeed(flyCam.getMoveSpeed() * 18f);
+        flyCam.setMoveSpeed(flyCam.getMoveSpeed() * 22f);
         cam.setLocation(Vector3f.UNIT_Y.mult(25));
         attachCoordinateAxes(Vector3f.ZERO.clone());
 

@@ -71,6 +71,7 @@ public class CameraVoxelActionInputAppState extends ActionInputAppState<CameraVo
                 IChunkVoxelData lastTraversedPossiblyEmptyChunk = m_rayCastAction.getLastTraversedChunk();
                 Chunk lastTraversedChunk;
 
+                // Generate or get the chunk
                 if (lastTraversedPossiblyEmptyChunk instanceof EmptyChunk) {
                     lastTraversedChunk = GameGlobal.world.getWorldGenerator().generateChunk(new Vector3i(m_rayCastAction.getLastTraversedChunkIndex()));
                 }
@@ -80,6 +81,25 @@ public class CameraVoxelActionInputAppState extends ActionInputAppState<CameraVo
 
                 lastTraversedChunk.setVoxelAt(VoxelType.SOLID, m_rayCastAction.getLastTraversedRelativeVoxelIndex());
 
+                // Update adjacent chunk(s) if the voxel is on a or multiple sides
+                Vector3i adjacentChunkIndex = new Vector3i();
+                for (int voxelIndexComponent = 0; voxelIndexComponent < Vector3i.COMPONENT_COUNT; ++voxelIndexComponent) {
+                    adjacentChunkIndex.set(m_rayCastAction.getLastTraversedChunkIndex());
+
+                    if (m_rayCastAction.getLastTraversedRelativeVoxelIndex().get(voxelIndexComponent) == 0) {
+                        adjacentChunkIndex.set(voxelIndexComponent, adjacentChunkIndex.get(voxelIndexComponent) - 1);
+                    }
+                    else if (m_rayCastAction.getLastTraversedRelativeVoxelIndex().get(voxelIndexComponent) == GameGlobal.world.getChunkSize().get(voxelIndexComponent) - 1) {
+                        adjacentChunkIndex.set(voxelIndexComponent, adjacentChunkIndex.get(voxelIndexComponent) + 1);
+                    }
+
+                    Chunk adjacentChunk = GameGlobal.world.getChunkAt(adjacentChunkIndex);
+                    if (adjacentChunk != null) {
+                        GameGlobal.world.redrawChunk(adjacentChunk);
+                    }
+                }
+
+                // Add or redraw the chunk
                 if (lastTraversedPossiblyEmptyChunk instanceof EmptyChunk) {
                     lastTraversedChunk.setEmpty(false);
                     GameGlobal.world.addChunk(lastTraversedChunk);
