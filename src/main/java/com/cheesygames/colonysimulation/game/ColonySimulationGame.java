@@ -4,6 +4,7 @@ import com.cheesygames.colonysimulation.Game;
 import com.cheesygames.colonysimulation.GameGlobal;
 import com.cheesygames.colonysimulation.asset.DefaultMaterial;
 import com.cheesygames.colonysimulation.game.input.cameravoxelaction.CameraVoxelActionInputAppState;
+import com.cheesygames.colonysimulation.world.IWorldEventCommunicator;
 import com.cheesygames.colonysimulation.world.World;
 import com.cheesygames.colonysimulation.world.chunk.Chunk;
 import com.jme3.font.BitmapText;
@@ -16,10 +17,12 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.debug.Arrow;
+import com.jme3.scene.debug.SkeletonPoints;
 import com.jme3.scene.shape.Box;
 
-public class ColonySimulationGame extends Game {
+public class ColonySimulationGame extends Game implements IWorldEventCommunicator {
 
     private Material m_chunkMaterial;
     private Material m_chunkBoundsMaterial;
@@ -33,8 +36,8 @@ public class ColonySimulationGame extends Game {
         super.simpleInitApp();
 
         GameGlobal.world = new World();
+        GameGlobal.world.addListener(this);
         GameGlobal.world.generateWorld();
-        GameGlobal.world.generateMeshes();
 
         initLights();
         initCrossHairs();
@@ -93,17 +96,13 @@ public class ColonySimulationGame extends Game {
         m_chunkBoundsMaterial.setColor("Color", ColorRGBA.Blue);
         m_chunkBoundsMaterial.getAdditionalRenderState().setWireframe(true);
         m_chunkBoundsMaterial.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
-
-        for (Chunk chunk : GameGlobal.world.getChunks().values()) {
-            addChunk(chunk);
-        }
     }
 
     protected void addChunk(Chunk chunk) {
-        Node chunkNode = new Node("");
-        Geometry chunkGeom = new Geometry("", chunk.getMesh());
+        Node chunkNode = new Node(chunk.getIndex().toString());
+        Geometry chunkGeom = new Geometry(chunk.getIndex().toString() + " geometry", chunk.getMesh());
         Box boundsMesh = new Box(GameGlobal.world.getChunkSize().x / 2f, GameGlobal.world.getChunkSize().y / 2f, GameGlobal.world.getChunkSize().z / 2f);
-        Geometry chunkBounds = new Geometry("", boundsMesh);
+        Geometry chunkBounds = new Geometry(chunk.getIndex().toString() + " bounds", boundsMesh);
 
         chunkBounds.setLocalTranslation(boundsMesh.xExtent - 0.5f, boundsMesh.yExtent - 0.5f, boundsMesh.zExtent - 0.5f);
         chunkNode.setLocalTranslation(chunk.computePositionIndex().toVector3f());
@@ -115,6 +114,18 @@ public class ColonySimulationGame extends Game {
         chunkNode.attachChild(chunkBounds);
 
         rootNode.attachChild(chunkNode);
+    }
+
+    @Override
+    public void chunkRedrawn(Chunk chunk, boolean wasMeshNullBefore) {
+        if (wasMeshNullBefore) {
+            addChunk(chunk);
+        }
+    }
+
+    @Override
+    public void chunkIsEmpty(Chunk chunk) {
+        rootNode.detachChildNamed(chunk.getIndex().toString());
     }
 
     protected void initLights() {

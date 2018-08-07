@@ -1,5 +1,6 @@
 package com.cheesygames.colonysimulation.game.input.cameravoxelaction;
 
+import com.cheesygames.colonysimulation.Game;
 import com.cheesygames.colonysimulation.GameGlobal;
 import com.cheesygames.colonysimulation.asset.DefaultMaterial;
 import com.cheesygames.colonysimulation.input.ActionInputAppState;
@@ -8,6 +9,8 @@ import com.cheesygames.colonysimulation.math.bounding.ray.VoxelRay;
 import com.cheesygames.colonysimulation.math.direction.Direction3D;
 import com.cheesygames.colonysimulation.math.vector.Vector3i;
 import com.cheesygames.colonysimulation.world.chunk.Chunk;
+import com.cheesygames.colonysimulation.world.chunk.EmptyChunk;
+import com.cheesygames.colonysimulation.world.chunk.IChunkVoxelData;
 import com.cheesygames.colonysimulation.world.chunk.voxel.VoxelType;
 import com.cheesygames.colonysimulation.world.raycast.VoxelFaceRayCastContinuousTraverser;
 import com.jme3.app.state.AppStateManager;
@@ -65,7 +68,25 @@ public class CameraVoxelActionInputAppState extends ActionInputAppState<CameraVo
             boolean stopRayCast = voxelType == VoxelType.SOLID;
 
             if (stopRayCast && m_rayCastAction.getIncomingDirection() != Direction3D.ZERO && m_actionListener.shouldAddVoxel()) {
-                ((Chunk) m_rayCastAction.getLastTraversedChunk()).setVoxelAt(VoxelType.SOLID, m_rayCastAction.getLastTraversedRelativeVoxelIndex());
+                IChunkVoxelData lastTraversedPossiblyEmptyChunk = m_rayCastAction.getLastTraversedChunk();
+                Chunk lastTraversedChunk;
+
+                if (lastTraversedPossiblyEmptyChunk instanceof EmptyChunk) {
+                    lastTraversedChunk = GameGlobal.world.getWorldGenerator().generateChunk(new Vector3i(m_rayCastAction.getLastTraversedChunkIndex()));
+                }
+                else {
+                    lastTraversedChunk = (Chunk) lastTraversedPossiblyEmptyChunk;
+                }
+
+                lastTraversedChunk.setVoxelAt(VoxelType.SOLID, m_rayCastAction.getLastTraversedRelativeVoxelIndex());
+
+                if (lastTraversedPossiblyEmptyChunk instanceof EmptyChunk) {
+                    lastTraversedChunk.setEmpty(false);
+                    GameGlobal.world.addChunk(lastTraversedChunk);
+                }
+                else {
+                    GameGlobal.world.redrawChunk(lastTraversedChunk);
+                }
             }
 
             return stopRayCast;
