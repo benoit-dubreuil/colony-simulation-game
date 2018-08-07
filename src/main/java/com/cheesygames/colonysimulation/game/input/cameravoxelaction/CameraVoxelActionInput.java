@@ -11,7 +11,8 @@ import com.jme3.input.controls.Trigger;
  */
 public enum CameraVoxelActionInput implements IActionInput {
 
-    ADD_VOXEL(true, false, 8, new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
+    ADD_VOXEL(true, false, 8, new MouseButtonTrigger(MouseInput.BUTTON_RIGHT)),
+    DESTROY_VOXEL(true, false, 8, new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
 
     static {
         try {

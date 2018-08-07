@@ -158,6 +158,7 @@ public class CameraVoxelActionInputAppState extends ActionInputAppState<CameraVo
 
         m_voxelRay.rayCastLocal(m_rayCastAction, m_finalVoxel);
         m_actionListener.setShouldAddVoxel(false);
+        m_actionListener.setShouldDestroyVoxel(false);
 
         if (m_voxelRay.wasStopped() && m_rayCastAction.getTraversedVoxelCount() > 2) {
             m_facePreview.setLocalRotation(m_rayCastAction.getIncomingDirection().getOpposite().getRotation());
