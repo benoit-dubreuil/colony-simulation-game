@@ -9,7 +9,9 @@ import com.cheesygames.colonysimulation.input.listener.analog.IPausableAnalogLis
 public class CameraVoxelActionListener implements IPausableAnalogListener<CameraVoxelActionInput>, IPausableActionListener<CameraVoxelActionInput> {
 
     private boolean m_shouldAddVoxel;
+    private boolean m_shouldDestroyVoxel;
     private float m_timeSinceLastVoxelAdded;
+    private float m_timeSinceLastVoxelDestroyed;
 
     @Override
     public void onAction(CameraVoxelActionInput cameraVoxelAction, boolean isPressed, float tpf) {
@@ -23,6 +25,13 @@ public class CameraVoxelActionListener implements IPausableAnalogListener<Camera
                 if ((m_timeSinceLastVoxelAdded += tpf) * cameraVoxelAction.getMaxInputPerSecond() >= 1) {
                     m_shouldAddVoxel |= true;
                     m_timeSinceLastVoxelAdded = 0;
+                }
+                break;
+
+            case DESTROY_VOXEL:
+                if ((m_timeSinceLastVoxelDestroyed += tpf) * cameraVoxelAction.getMaxInputPerSecond() >= 1) {
+                    m_shouldDestroyVoxel |= true;
+                    m_timeSinceLastVoxelDestroyed = 0;
                 }
                 break;
         }
@@ -44,5 +53,13 @@ public class CameraVoxelActionListener implements IPausableAnalogListener<Camera
 
     public void setShouldAddVoxel(boolean shouldAddVoxel) {
         m_shouldAddVoxel = shouldAddVoxel;
+    }
+
+    public boolean shouldDestroyVoxel() {
+        return m_shouldDestroyVoxel;
+    }
+
+    public void setShouldDestroyVoxel(boolean shouldDestroyVoxel) {
+        m_shouldDestroyVoxel = shouldDestroyVoxel;
     }
 }
