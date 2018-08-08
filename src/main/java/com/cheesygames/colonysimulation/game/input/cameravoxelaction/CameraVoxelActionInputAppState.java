@@ -1,6 +1,5 @@
 package com.cheesygames.colonysimulation.game.input.cameravoxelaction;
 
-import com.cheesygames.colonysimulation.Game;
 import com.cheesygames.colonysimulation.GameGlobal;
 import com.cheesygames.colonysimulation.asset.DefaultMaterial;
 import com.cheesygames.colonysimulation.input.ActionInputAppState;
@@ -67,50 +66,82 @@ public class CameraVoxelActionInputAppState extends ActionInputAppState<CameraVo
         m_rayCastAction.setReturnCondition((index, voxelType) -> {
             boolean stopRayCast = voxelType == VoxelType.SOLID;
 
-            if (stopRayCast && m_rayCastAction.getIncomingDirection() != Direction3D.ZERO && m_actionListener.shouldAddVoxel()) {
-                IChunkVoxelData lastTraversedPossiblyEmptyChunk = m_rayCastAction.getLastTraversedChunk();
-                Chunk lastTraversedChunk;
-
-                // Generate or get the chunk
-                if (lastTraversedPossiblyEmptyChunk instanceof EmptyChunk) {
-                    lastTraversedChunk = GameGlobal.world.getWorldGenerator().generateChunk(new Vector3i(m_rayCastAction.getLastTraversedChunkIndex()));
-                }
-                else {
-                    lastTraversedChunk = (Chunk) lastTraversedPossiblyEmptyChunk;
+            if (stopRayCast) {
+                if (m_rayCastAction.getIncomingDirection() != Direction3D.ZERO && m_actionListener.shouldAddVoxel()) {
+                    m_rayCastAction.setLastTraversedChunk(modifyVoxelAtRayCast(m_rayCastAction.getLastTraversedChunk(),
+                        m_rayCastAction.getLastTraversedChunkIndex(),
+                        m_rayCastAction.getLastTraversedRelativeVoxelIndex(),
+                        VoxelType.SOLID));
                 }
 
-                lastTraversedChunk.setVoxelAt(VoxelType.SOLID, m_rayCastAction.getLastTraversedRelativeVoxelIndex());
-
-                // Update adjacent chunk(s) if the voxel is on a or multiple sides
-                Vector3i adjacentChunkIndex = new Vector3i();
-                for (int voxelIndexComponent = 0; voxelIndexComponent < Vector3i.COMPONENT_COUNT; ++voxelIndexComponent) {
-                    adjacentChunkIndex.set(m_rayCastAction.getLastTraversedChunkIndex());
-
-                    if (m_rayCastAction.getLastTraversedRelativeVoxelIndex().get(voxelIndexComponent) == 0) {
-                        adjacentChunkIndex.set(voxelIndexComponent, adjacentChunkIndex.get(voxelIndexComponent) - 1);
-                    }
-                    else if (m_rayCastAction.getLastTraversedRelativeVoxelIndex().get(voxelIndexComponent) == GameGlobal.world.getChunkSize().get(voxelIndexComponent) - 1) {
-                        adjacentChunkIndex.set(voxelIndexComponent, adjacentChunkIndex.get(voxelIndexComponent) + 1);
-                    }
-
-                    Chunk adjacentChunk = GameGlobal.world.getChunkAt(adjacentChunkIndex);
-                    if (adjacentChunk != null) {
-                        GameGlobal.world.redrawChunk(adjacentChunk);
-                    }
-                }
-
-                // Add or redraw the chunk
-                if (lastTraversedPossiblyEmptyChunk instanceof EmptyChunk) {
-                    lastTraversedChunk.setEmpty(false);
-                    GameGlobal.world.addChunk(lastTraversedChunk);
-                }
-                else {
-                    GameGlobal.world.redrawChunk(lastTraversedChunk);
+                if (m_actionListener.shouldDestroyVoxel() && !m_actionListener.shouldAddVoxel()) {
+                    m_rayCastAction.setChunk(modifyVoxelAtRayCast(m_rayCastAction.getChunk(),
+                        m_rayCastAction.getChunkIndex(),
+                        m_rayCastAction.getRelativeVoxelIndex(),
+                        VoxelType.AIR));
                 }
             }
 
             return stopRayCast;
         });
+    }
+
+    /**
+     * Modifies the voxel at the supplied voxel's chunk relative index. If the chunk does not exist, i.e. if it's an instance of {@link EmptyChunk}, then create and generate the
+     * chunk at the specified chunk index and then apply the voxel modification.
+     *
+     * @param possiblyEmptyChunk The chunk to modify. It can either be an instance of {@link EmptyChunk} or {@link Chunk}.
+     * @param chunkIndex         The index of the supplied chunk. It is not a reference to the return value of {@link Chunk#getIndex()}, if the parameter possiblyEmptyChunk is an
+     *                           instance of {@link Chunk}.
+     * @param relativeVoxelIndex The index in the supplied chunk of where the voxel to modify is.
+     * @param newVoxel           The new value for the specified voxel.
+     *
+     * @return The parameter possiblyEmptyChunk if it is an instance of {@link Chunk}, otherwise the newly generated {@link Chunk} at the supplied chunk index.
+     */
+    private static IChunkVoxelData modifyVoxelAtRayCast(IChunkVoxelData possiblyEmptyChunk, Vector3i chunkIndex, Vector3i relativeVoxelIndex, VoxelType newVoxel) {
+        Chunk chunk;
+
+        // Generate or get the chunk
+        if (possiblyEmptyChunk instanceof EmptyChunk) {
+            chunk = GameGlobal.world.getWorldGenerator().generateChunk(new Vector3i(chunkIndex));
+        }
+        else {
+            chunk = (Chunk) possiblyEmptyChunk;
+        }
+
+        VoxelType oldVoxel = chunk.getVoxelAt(relativeVoxelIndex);
+        if (oldVoxel != newVoxel) {
+            chunk.setVoxelAt(newVoxel, relativeVoxelIndex);
+
+            // Update adjacent chunk(s) if the voxel is on a or multiple sides
+            Vector3i adjacentChunkIndex = new Vector3i();
+            for (int voxelIndexComponent = 0; voxelIndexComponent < Vector3i.COMPONENT_COUNT; ++voxelIndexComponent) {
+                adjacentChunkIndex.set(chunkIndex);
+
+                if (relativeVoxelIndex.get(voxelIndexComponent) == 0) {
+                    adjacentChunkIndex.set(voxelIndexComponent, adjacentChunkIndex.get(voxelIndexComponent) - 1);
+                }
+                else if (relativeVoxelIndex.get(voxelIndexComponent) == GameGlobal.world.getChunkSize().get(voxelIndexComponent) - 1) {
+                    adjacentChunkIndex.set(voxelIndexComponent, adjacentChunkIndex.get(voxelIndexComponent) + 1);
+                }
+
+                Chunk adjacentChunk = GameGlobal.world.getChunkAt(adjacentChunkIndex);
+                if (adjacentChunk != null) {
+                    GameGlobal.world.redrawChunk(adjacentChunk);
+                }
+            }
+
+            // Add or redraw the chunk
+            if (possiblyEmptyChunk instanceof EmptyChunk) {
+                chunk.computeIsEmpty();
+                GameGlobal.world.addChunk(chunk);
+            }
+            else {
+                GameGlobal.world.redrawChunk(chunk);
+            }
+        }
+
+        return chunk;
     }
 
     private Geometry createFacePreview() {
