@@ -109,9 +109,9 @@ public class CameraVoxelActionInputAppState extends ActionInputAppState<CameraVo
             chunk = (Chunk) possiblyEmptyChunk;
         }
 
-        VoxelType oldVoxel = chunk.getVoxelAt(relativeVoxelIndex);
+        VoxelType oldVoxel = chunk.getVoxelAt(relativeVoxelIndex).voxelType;
         if (oldVoxel != newVoxel) {
-            chunk.setVoxelAt(newVoxel, relativeVoxelIndex);
+            chunk.setVoxelTypeAt(newVoxel, relativeVoxelIndex);
 
             // Update adjacent chunk(s) if the voxel is on a or multiple sides
             Vector3i adjacentChunkIndex = new Vector3i();
