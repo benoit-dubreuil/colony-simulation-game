@@ -64,7 +64,7 @@ public class CameraVoxelActionInputAppState extends ActionInputAppState<CameraVo
         m_voxelRay.setLength(RAY_DISTANCE);
 
         m_rayCastAction.setReturnCondition((index, voxelType) -> {
-            boolean stopRayCast = voxelType == VoxelType.SOLID;
+            boolean stopRayCast = voxelType.isSolid();
 
             if (stopRayCast) {
                 if (m_rayCastAction.getIncomingDirection() != Direction3D.ZERO && m_actionListener.shouldAddVoxel()) {
@@ -72,13 +72,24 @@ public class CameraVoxelActionInputAppState extends ActionInputAppState<CameraVo
                         m_rayCastAction.getLastTraversedChunkIndex(),
                         m_rayCastAction.getLastTraversedRelativeVoxelIndex(),
                         VoxelType.SOLID));
-                }
 
-                if (m_actionListener.shouldDestroyVoxel() && !m_actionListener.shouldAddVoxel()) {
+                    m_actionListener.setShouldAddVoxel(false);
+                }
+                else if (m_actionListener.shouldAddLightVoxel()) {
+                    m_rayCastAction.setLastTraversedChunk(modifyVoxelAtRayCast(m_rayCastAction.getLastTraversedChunk(),
+                        m_rayCastAction.getLastTraversedChunkIndex(),
+                        m_rayCastAction.getLastTraversedRelativeVoxelIndex(),
+                        VoxelType.LIGHT));
+
+                    m_actionListener.setShouldAddLightVoxel(false);
+                }
+                else if (m_actionListener.shouldDestroyVoxel()) {
                     m_rayCastAction.setChunk(modifyVoxelAtRayCast(m_rayCastAction.getChunk(),
                         m_rayCastAction.getChunkIndex(),
                         m_rayCastAction.getRelativeVoxelIndex(),
                         VoxelType.AIR));
+
+                    m_actionListener.setShouldDestroyVoxel(false);
                 }
             }
 
@@ -188,8 +199,6 @@ public class CameraVoxelActionInputAppState extends ActionInputAppState<CameraVo
         m_voxelRay.setDirection(cam.getDirection());
 
         m_voxelRay.rayCastLocal(m_rayCastAction, m_finalVoxel);
-        m_actionListener.setShouldAddVoxel(false);
-        m_actionListener.setShouldDestroyVoxel(false);
 
         if (m_voxelRay.wasStopped() && m_rayCastAction.getTraversedVoxelCount() > 2) {
             m_facePreview.setLocalRotation(m_rayCastAction.getIncomingDirection().getOpposite().getRotation());
